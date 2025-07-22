@@ -5,11 +5,12 @@ import settingService from '../service/setting-service';
 import attService from '../service/att-service';
 import constant from '../const/constant';
 import fileUtils from '../utils/file-utils';
-import { attConst, emailConst, isDel, settingConst } from '../const/entity-const';
+import { emailConst, isDel, roleConst, settingConst } from '../const/entity-const';
 import emailUtils from '../utils/email-utils';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc'
 import timezone from 'dayjs/plugin/timezone'
+import roleService from '../service/role-service';
 dayjs.extend(utc)
 dayjs.extend(timezone)
 
@@ -25,14 +26,14 @@ export async function email(message, env, ctx) {
 			forwardStatus,
 			forwardEmail,
 			ruleEmail,
-			ruleType
+			ruleType,
+			r2Domain
 		} = await settingService.query({ env });
 
 		if (receive === settingConst.receive.CLOSE) {
 			return;
 		}
 
-		const account = await accountService.selectByEmailIncludeDelNoCase({ env: env }, message.to);
 
 		const reader = message.raw.getReader();
 		let content = '';
@@ -45,7 +46,52 @@ export async function email(message, env, ctx) {
 
 		const email = await PostalMime.parse(content);
 
-		console.log(email)
+		const account = await accountService.selectByEmailIncludeDelNoCase({ env: env }, message.to);
+
+		if (account && account.email !== env.admin) {
+
+			let { banEmail, banEmailType } = await roleService.selectByUserId({ env: env}, account.userId);
+
+			banEmail = banEmail.split(",").filter(item => item !== "")
+
+			for (const item of banEmail) {
+
+				if (item.startsWith('*@')) {
+
+					const banDomain = emailUtils.getDomain(item.toLowerCase())
+					const receiveDomain = emailUtils.getDomain(email.from.address.toLowerCase())
+
+					if (banDomain === receiveDomain) {
+
+						if (banEmailType === roleConst.banEmailType.ALL) return
+
+						if (banEmailType === roleConst.banEmailType.CONTENT) {
+							email.html = '邮件内容已被移除'
+							email.text = '邮件内容已被移除'
+							email.attachments = []
+						}
+
+					}
+
+				} else {
+
+					if (item.toLowerCase() === email.from.address.toLowerCase()) {
+
+						if (banEmailType === roleConst.banEmailType.ALL) return
+
+						if (banEmailType === roleConst.banEmailType.CONTENT) {
+							email.html = '邮件内容已被移除'
+							email.text = '邮件内容已被移除'
+							email.attachments = []
+						}
+
+					}
+
+				}
+
+			}
+
+		}
 
 		const toName = email.to.find(item => item.address === message.to)?.name || '';
 
@@ -69,6 +115,11 @@ export async function email(message, env, ctx) {
 			status: emailConst.status.SAVING
 		};
 
+		let headers = message.headers
+
+		console.log(headers.get('X-Cf-Spamh-Score'))
+		console.log(email)
+
 		const attachments = [];
 		const cidAttachments = [];
 
@@ -82,13 +133,12 @@ export async function email(message, env, ctx) {
 			}
 		}
 
-		let emailRow = await emailService.receive({ env }, params, cidAttachments);
+		let emailRow = await emailService.receive({ env }, params, cidAttachments, r2Domain);
 
 		attachments.forEach(attachment => {
 			attachment.emailId = emailRow.emailId;
 			attachment.userId = emailRow.userId;
 			attachment.accountId = emailRow.accountId;
-			attachment.type = attachment.contentId ? attConst.type.EMBED : attConst.type.ATT;
 		});
 
 		if (attachments.length > 0 && env.r2) {

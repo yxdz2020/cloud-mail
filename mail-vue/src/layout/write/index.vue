@@ -1,5 +1,5 @@
 <template>
-  <div class="send" v-show="show" @click="close">
+  <div class="send" v-show="show">
     <div class="write-box" @click.stop>
       <div class="title">
         <div class="title-left">
@@ -15,7 +15,7 @@
         </div>
       </div>
       <div class="container">
-        <el-input-tag @add-tag="addTagChange" tag-type="primary" size="default" v-model="form.receiveEmail" placeholder="多邮个箱用, 分开 example1.com,example2.com" >
+        <el-input-tag @add-tag="addTagChange" tag-type="primary" size="default" v-model="form.receiveEmail" placeholder="多个邮箱用, 分开 example1.com,example2.com" >
           <template #prefix>
             <div class="item-title">收件人 </div>
           </template>
@@ -56,7 +56,7 @@
 </template>
 <script setup>
 import tinyEditor from '@/components/tiny-editor/index.vue'
-import {h, onMounted, onUnmounted, reactive, ref} from "vue";
+import {h, nextTick, onMounted, onUnmounted, reactive, ref, toRaw} from "vue";
 import {Icon} from "@iconify/vue";
 import {useUserStore} from "@/store/user.js";
 import {emailSend} from "@/request/email.js";
@@ -66,13 +66,20 @@ import {useEmailStore} from "@/store/email.js";
 import {fileToBase64, formatBytes} from "@/utils/file-utils.js";
 import {getIconByName} from "@/utils/icon-utils.js";
 import sendPercent from "@/components/send-percent/index.vue"
-import {formatDetailDate} from "@/utils/day.js";
+import {formatDetailDate, fromNow} from "@/utils/day.js";
+import {useSettingStore} from "@/store/setting.js";
+import {userDraftStore} from "@/store/draft.js";
+import db from "@/db/db.js";
+import dayjs from "dayjs";
 
 defineExpose({
   open,
-  openReply
+  openReply,
+  openDraft
 })
 
+const draftStore = userDraftStore()
+const settingStore = useSettingStore()
 const emailStore = useEmailStore();
 const accountStore = useAccountStore()
 const editor = ref({})
@@ -82,6 +89,12 @@ const percent = ref(0)
 let percentMessage = null
 let sending = false
 const defValue = ref('')
+const backReply = reactive({
+  receiveEmail: [],
+  subject: '',
+  content: '',
+  sendType: ''
+})
 const form = reactive({
   sendEmail: '',
   receiveEmail: [],
@@ -93,7 +106,8 @@ const form = reactive({
   sendType: '',
   text: '',
   emailId: 0,
-  attachments: []
+  attachments: [],
+  draftId: null,
 })
 
 function addTagChange(val) {
@@ -108,9 +122,7 @@ function addTagChange(val) {
     if (isEmail(email) && !form.receiveEmail.includes(email)) {
       form.receiveEmail.push(email)
     }
-
   })
-
 
 }
 
@@ -153,7 +165,6 @@ function chooseFile() {
       })
       return
     }
-
     const content = await fileToBase64(file)
     form.attachments.push({content, filename, size, contentType})
   }
@@ -215,7 +226,9 @@ async function sendEmail() {
   })
 
   sending = true
-  close()
+
+  show.value = false
+
   emailSend(form, (e) => {
     percent.value = Math.round((e.loaded * 98) / e.total)
   }).then(emailList => {
@@ -223,15 +236,25 @@ async function sendEmail() {
     emailList.forEach(item => {
       emailStore.sendScroll?.addItem(item)
     })
-    resetForm()
-    show.value = false
+
     ElNotification({
       title: '邮件已发送',
       type: "success",
       message: h('span', { style: 'color: teal' }, email.subject),
       position: 'bottom-right'
     })
+
     userStore.refreshUserInfo();
+
+    if (form.draftId) {
+      form.subject = ''
+      form.content = ''
+      form.receiveEmail = []
+      draftStore.setDraft = {...toRaw(form)}
+    }
+
+    resetForm()
+    show.value = false
   }).catch((e) => {
     ElNotification({
       title: '发送失败',
@@ -239,6 +262,7 @@ async function sendEmail() {
       message: h('span', { style: 'color: teal' }, e.message),
       position: 'bottom-right'
     })
+    show.value = true
   }).finally(() => {
     percentMessage.close()
     percent.value = 0
@@ -253,8 +277,13 @@ function resetForm() {
   form.content = ''
   form.manyType = null
   form.attachments = []
-  form.sendType = null
+  form.sendType = ''
   form.emailId = 0
+  form.draftId = null
+  backReply.content = ''
+  backReply.subject = ''
+  backReply.receiveEmail = []
+  backReply.sendType = ''
   editor.value.clearEditor()
 }
 
@@ -283,11 +312,27 @@ function openReply(email) {
     <br>
         ${ formatDetailDate(email.createTime) }，${email.name} &lt${email.sendEmail}&gt 来信:
     </div>
-    <blockquote style="margin: 0 0 0 0.8ex;border-left: 1px solid rgb(204,204,204);padding-left: 1ex;">${email.content}</blockquote>`
+    <blockquote class="mceNonEditable" style="margin: 0 0 0 0.8ex;border-left: 1px solid rgb(204,204,204);padding-left: 1ex;">
+      <articl>
+          ${formatImage(email.content) || `<pre style="font-family: inherit;word-break: break-word;white-space: pre-wrap;margin: 0">${email.text}</pre>`}
+      </article>
+    </blockquote>`
     open()
+
+    nextTick(() => {
+      backReply.content = editor.value.getContent()
+      backReply.subject = form.subject
+      backReply.receiveEmail = form.receiveEmail
+      backReply.sendType = form.sendType
+    })
   })
 
+}
 
+function formatImage(content) {
+  content = content || '';
+  const domain = settingStore.settings.r2Domain;
+  return  content.replace(/{{domain}}/g, domain + '/');
 }
 
 function open() {
@@ -300,6 +345,14 @@ function open() {
     form.accountId = accountStore.currentAccount.accountId;
     form.name = accountStore.currentAccount.name;
   }
+  show.value = true;
+  editor.value.focus()
+}
+
+function openDraft(draft) {
+  Object.assign(form,{...draft})
+  defValue.value = ''
+  setTimeout(() => defValue.value = form.content)
   show.value = true;
   editor.value.focus()
 }
@@ -319,7 +372,52 @@ onUnmounted(() => {
 });
 
 function close() {
-  show.value = false;
+
+  if (form.draftId) {
+    draftStore.setDraft = {...toRaw(form)}
+    show.value = false
+    resetForm()
+    return;
+  }
+
+  if (!(form.content || form.subject || form.receiveEmail.length > 0)) {
+    show.value = false
+    resetForm()
+    return;
+  }
+
+  if (backReply.sendType === 'reply') {
+    let subjectFlag = form.subject === backReply.subject
+    let contentFlag = editor.value.getContent() === backReply.content
+    let receiveFlag = form.receiveEmail.length === 1 && form.receiveEmail[0] === backReply.receiveEmail[0]
+    if (subjectFlag && contentFlag && receiveFlag) {
+      resetForm();
+      close()
+      return;
+    }
+  }
+
+  ElMessageBox.confirm('是否保存草稿?', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+    distinguishCancelAndClose: true
+  }).then( async () => {
+    const formData = {...toRaw(form)}
+    delete formData.draftId
+    delete formData.attachments
+    formData.createTime = dayjs().utc().format('YYYY-MM-DD HH:mm:ss');
+    const draftId = await db.value.draft.add({...formData})
+    db.value.att.add({draftId,attachments: toRaw(form.attachments)})
+    draftStore.refreshList ++
+    show.value = false
+  }).catch((action) => {
+    if (action === 'cancel') {
+      show.value = false
+      resetForm()
+    }
+  })
+
 }
 
 </script>

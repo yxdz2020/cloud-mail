@@ -157,8 +157,8 @@ const attService = {
 		return orm(c).select().from(att).where(
 			and(
 				inArray(att.emailId,emailIds),
-				eq(att.type, attConst.type.ATT),
-				isNull(att.contentId)))
+				eq(att.type, attConst.type.ATT)
+			))
 			.all();
 	}
 };

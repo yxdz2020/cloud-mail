@@ -1,6 +1,6 @@
 import orm from '../entity/orm';
 import email from '../entity/email';
-import { emailConst, isDel, settingConst } from '../const/entity-const';
+import { attConst, emailConst, isDel, settingConst } from '../const/entity-const';
 import { and, desc, eq, gt, inArray, lt, count, asc, sql, ne, or } from 'drizzle-orm';
 import { star } from '../entity/star';
 import settingService from './setting-service';
@@ -120,28 +120,8 @@ const emailService = {
 			.run();
 	},
 
-	receive(c, params, cidAttList) {
-
-		const { document } = parseHTML(params.content);
-
-		const images = Array.from(document.querySelectorAll('img'));
-
-		for (const img of images) {
-
-			const src = img.getAttribute('src');
-			if (src && src.startsWith('cid:')) {
-
-				const cid = src.replace(/^cid:/, '');
-				const attCidIndex = cidAttList.findIndex(cidAtt => cidAtt.contentId.replace(/^<|>$/g, '') === cid);
-
-				if (attCidIndex > -1) {
-					const cidAtt = cidAttList[attCidIndex];
-					img.setAttribute('src', '{{domain}}' + cidAtt.key);
-				}
-			}
-		}
-
-		params.content = document.toString();
+	receive(c, params, cidAttList, r2domain) {
+		params.content = this.imgReplace(params.content, cidAttList, r2domain)
 		return orm(c).insert(email).values({ ...params }).returning().get();
 	},
 
@@ -151,7 +131,7 @@ const emailService = {
 
 		const { resendTokens, r2Domain, send } = await settingService.query(c);
 
-		const { attDataList, html } = await attService.toImageUrlHtml(c, content, r2Domain);
+		let { attDataList, html } = await attService.toImageUrlHtml(c, content, r2Domain);
 
 		if (attDataList.length > 0 && !r2Domain) {
 			throw new BizError('r2域名未配置不能发送正文图片');
@@ -170,7 +150,7 @@ const emailService = {
 		}
 
 		if (send === settingConst.send.CLOSE) {
-			throw new BizError('邮箱发送功能已停用', 403);
+			throw new BizError('邮件发送功能已停用', 403);
 		}
 
 		if (attachments.length > 0 && manyType === 'divide') {
@@ -183,13 +163,17 @@ const emailService = {
 
 		if (c.env.admin !== userRow.email && roleRow.sendCount) {
 
+			if (roleRow.sendCount < 0) {
+				throw new BizError('用户无发送次数', 403);
+			}
+
 			if (userRow.sendCount >= roleRow.sendCount) {
-				if (roleRow.sendType === 'day') throw new BizError('已到达每日发送次数限制', 403);
-				if (roleRow.sendType === 'count') throw new BizError('已到达发送次数限制', 403);
+				if (roleRow.sendType === 'day') throw new BizError('发送次数已到达每日限制', 403);
+				if (roleRow.sendType === 'count') throw new BizError('发送次数已到达限制', 403);
 			}
 
 			if (userRow.sendCount + receiveEmail.length > roleRow.sendCount) {
-				if (roleRow.sendType === 'day') throw new BizError('剩余每日发送次数不足', 403);
+				if (roleRow.sendType === 'day') throw new BizError('当日剩余发送次数不足', 403);
 				if (roleRow.sendType === 'count') throw new BizError('剩余发送次数不足', 403);
 			}
 
@@ -198,24 +182,25 @@ const emailService = {
 
 		const accountRow = await accountService.selectById(c, accountId);
 
+		if (!accountRow) {
+			throw new BizError('发件人邮箱不存在');
+		}
+
 		const domain = emailUtils.getDomain(accountRow.email);
 		const resendToken = resendTokens[domain];
+
 		if (!resendToken) {
 			throw new BizError('resend密钥未配置');
 		}
 
-		if (!accountRow) {
-			throw new BizError('邮箱不存在');
-		}
 
 		if (accountRow.userId !== userId) {
-			throw new BizError('非当前用户所属邮箱');
+			throw new BizError('发件人邮箱非当前用户所有');
 		}
 
 		if (!name) {
 			name = emailUtils.getName(accountRow.email);
 		}
-
 
 		let emailRow = {
 			messageId: null
@@ -290,6 +275,7 @@ const emailService = {
 			throw new BizError(error.message);
 		}
 
+		html = this.imgReplace(html, null, r2Domain);
 
 		const emailData = {};
 		emailData.sendEmail = accountRow.email;
@@ -371,6 +357,47 @@ const emailService = {
 		}
 
 		return emailRowList;
+	},
+
+	imgReplace(content, cidAttList, r2domain) {
+
+		if (!content) {
+			return ''
+		}
+
+		const { document } = parseHTML(content);
+
+		const images = Array.from(document.querySelectorAll('img'));
+
+		const useAtts = []
+
+		for (const img of images) {
+
+			const src = img.getAttribute('src');
+			if (src && src.startsWith('cid:') && cidAttList) {
+
+				const cid = src.replace(/^cid:/, '');
+				const attCidIndex = cidAttList.findIndex(cidAtt => cidAtt.contentId.replace(/^<|>$/g, '') === cid);
+
+				if (attCidIndex > -1) {
+					const cidAtt = cidAttList[attCidIndex];
+					img.setAttribute('src', '{{domain}}' + cidAtt.key);
+					useAtts.push(cidAtt)
+				}
+
+			}
+
+			if (src && src.startsWith(r2domain + '/')) {
+				img.setAttribute('src', src.replace(r2domain + '/', '{{domain}}'));
+			}
+
+		}
+
+		useAtts.forEach(att => {
+			att.type = attConst.type.EMBED
+		})
+
+		return document.toString();
 	},
 
 	selectById(c, emailId) {
@@ -467,7 +494,7 @@ const emailService = {
 
 	async allList(c, params) {
 
-		let { emailId, size, name, subject, accountEmail, sendEmail, userEmail, type, timeSort } = params;
+		let { emailId, size, name, subject, accountEmail, userEmail, type, timeSort } = params;
 
 		size = Number(size);
 

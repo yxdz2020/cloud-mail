@@ -6,12 +6,13 @@
 </template>
 
 <script setup>
-import {ref, onMounted, onBeforeUnmount, watch, nextTick} from 'vue';
+import {ref, onMounted, onBeforeUnmount, watch, nextTick, shallowRef, defineEmits} from 'vue';
 import loading from "@/components/loading/index.vue";
 import {compressImage} from "@/utils/file-utils.js";
 defineExpose({
   clearEditor,
-  focus
+  focus,
+  getContent
 })
 
 const props = defineProps({
@@ -27,7 +28,7 @@ const props = defineProps({
 
 
 const emit = defineEmits(['change']);
-const editor = ref(null);
+const editor = shallowRef(null);
 const isInitialized = ref(false);
 const editorRef = ref(null);
 const showLoading = ref(false);
@@ -77,7 +78,6 @@ function initEditor() {
     toolbar_mode: 'scrolling',
     mobile: {
       toolbar: 'fullscreen bold emoticons forecolor backcolor italic fontsize | alignleft aligncenter alignright alignjustify | outdent indent |  bullist numlist | link image  | table code preview ',
-
     },
     font_size_formats: '8px 10px 12px 14px 16px 18px 24px 36px',
     emoticons_search: false,
@@ -85,8 +85,9 @@ function initEditor() {
     language_url: '/tinymce/langs/zh_CN.js',
     menubar: false,
     license_key: 'gpl',
+    noneditable_class: 'mceNonEditable',
     content_style: ` .tox-dialog__body-content  { margin: 0 !important; }
-    img { max-width: 100%; height: auto; }
+    img { max-width: 100% !important; height: auto !important; }
     body {margin: 10px 8px 0 5px !important; font-family: 'HarmonyOS'; font-size: 14px;}
     @media (pointer: fine) and (hover: hover) {
         ::-webkit-scrollbar {
@@ -109,9 +110,6 @@ function initEditor() {
     }
     .mce-item-table:not([border]), .mce-item-table:not([border]) caption, .mce-item-table:not([border]) td, .mce-item-table:not([border]) th, .mce-item-table[border="0"], .mce-item-table[border="0"] caption, .mce-item-table[border="0"] td, .mce-item-table[border="0"] th, table[style*="border-width: 0px"], table[style*="border-width: 0px"] caption, table[style*="border-width: 0px"] td, table[style*="border-width: 0px"] th {
         border: none;
-    }
-    a {
-        color: #409EFF !important;
     }
     `,
     setup: (ed) => {
@@ -163,6 +161,10 @@ function focus() {
   nextTick(() => {
     editor.value.focus()
   })
+}
+
+function getContent() {
+  return editor.value.getContent()
 }
 
 

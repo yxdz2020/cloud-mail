@@ -35,7 +35,7 @@
           </div>
           <el-scrollbar class="htm-scrollbar" :class="email.attList.length === 0 ? 'bottom-distance' : ''">
             <ShadowHtml :html="formatImage(email.content)" v-if="email.content" />
-            <span v-else class="email-text" >{{email.text}}</span>
+            <pre v-else class="email-text" >{{email.text}}</pre>
           </el-scrollbar>
           <div class="att" v-if="email.attList.length > 0">
             <div class="att-title">
@@ -380,8 +380,10 @@ const handleDelete = () => {
 }
 
 .email-text {
+  font-family: inherit;
   white-space: pre-wrap;
   word-break: break-word;
+  margin: 0;
 }
 
 .bottom-distance {
