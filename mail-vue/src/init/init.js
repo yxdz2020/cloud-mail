@@ -1,7 +1,6 @@
 import {useUserStore} from "@/store/user.js";
 import {useSettingStore} from "@/store/setting.js";
 import {useAccountStore} from "@/store/account.js";
-import {useUiStore} from "@/store/ui.js";
 import {loginUserInfo} from "@/request/my.js";
 import {permsToRouter} from "@/perm/perm.js";
 import router from "@/router";
@@ -28,10 +27,6 @@ export async function init() {
     }
 
     i18n.global.locale.value = settingStore.lang
-
-    const uiStore = useUiStore();
-    let doc = document.querySelector("html");
-    doc.setAttribute('class', uiStore.dark ? 'dark' : '');
 
     let setting = null;
 

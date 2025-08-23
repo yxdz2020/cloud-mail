@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -7,8 +7,17 @@
   <link rel="icon" href="/assets/favicon-C5dAZutX.svg" type="image/svg+xml">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-  <script type="module" crossorigin src="/assets/index-BWO6kBue.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-IV79mZ40.css">
+  <script>
+    const uiStoreStr =  localStorage.getItem('ui')
+    if (uiStoreStr) {
+      const uiStore =  JSON.parse(uiStoreStr)
+      const root = document.documentElement
+      root.style.background = uiStore.dark ? '#141414' : '#FFFFFF'
+      root.setAttribute('class', uiStore.dark ? 'dark' : '');
+    }
+  </script>
+  <script type="module" crossorigin src="/assets/index-DCcUqVQw.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-CnzY8c7c.css">
 </head>
 <style>
 
@@ -22,6 +31,7 @@
     justify-content: center;
     align-items: center;
     z-index: 500;
+    background: var(--el-bg-color);
   }
 
   .loading-icon {
@@ -35,7 +45,6 @@
     height: 30px;
     width: 30px;
     animation: loading-rotate 1s linear infinite;
-    fill: transparent !important;
   }
 
   .loading-path .dot1 {
@@ -94,14 +103,6 @@
     </svg>
   </div>
 </div>
-<div id="app"></div>
-<script>
-  const uiStoreStr =  localStorage.getItem('ui')
-  if (uiStoreStr) {
-    const uiStore =  JSON.parse(uiStoreStr)
-    const doc = document.querySelector('#loading-first')
-    doc.style.background = uiStore.dark ? '#141414' : '#FFFFFF'
-  }
-</script>
+<div id="app"></div>
 </body>
 </html>
