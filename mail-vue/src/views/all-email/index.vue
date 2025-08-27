@@ -205,8 +205,8 @@ function getEmailList(emailId, size) {
 }
 
 .search-input {
-
-  width: min(280px,calc(100vw - 140px));
+  width: 100%;
+  max-width: 280px;
   height: 28px;
   .setting-icon {
     position: relative;

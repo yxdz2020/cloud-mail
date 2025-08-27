@@ -1,9 +1,9 @@
 <template>
   <div class="settings-container">
-    <div v-if="firstLoading" class="loading">
+    <div class="loading" :class="firstLoading ? 'loading-show' : 'loading-hide'" >
       <loading/>
     </div>
-    <el-scrollbar class="scroll" v-else>
+    <el-scrollbar class="scroll" v-if="!firstLoading">
       <div class="scroll-body">
         <div class="card-grid">
           <!-- Website Settings Card -->
@@ -660,7 +660,7 @@ defineOptions({
   name: 'sys-setting'
 })
 
-const currentVersion = 'v1.7.0'
+const currentVersion = 'v1.8.0'
 const hasUpdate = ref(false)
 let getUpdateErrorCount = 1;
 const {t, locale} = useI18n();
@@ -1172,12 +1172,28 @@ function editSetting(settingForm, refreshStatus = true) {
   height: 100%;
   overflow: hidden;
   background: var(--extra-light-fill) !important;
-
+  position: relative;
   .loading {
     display: flex;
     align-items: center;
     justify-content: center;
     height: 100%;
+    z-index: 2;
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  .loading-show {
+    transition: all 200ms ease 200ms;
+    opacity: 1;
+  }
+
+  .loading-hide {
+    transition: var(--loading-hide-transition);
+    pointer-events: none;
+    opacity: 0;
   }
 }
 
