@@ -12,13 +12,17 @@
     if (uiStoreStr) {
       const uiStore =  JSON.parse(uiStoreStr)
       const root = document.documentElement
-      root.style.background = uiStore.dark ? '#141414' : '#FFFFFF'
       root.setAttribute('class', uiStore.dark ? 'dark' : '');
     }
   </script>
 </head>
 <style>
-
+  html {
+    background: #FFFFFF;
+  }
+  .dark {
+    background: #141414;
+  }
   #loading-first {
     position: fixed;
     left: 0;
@@ -30,6 +34,12 @@
     align-items: center;
     z-index: 500;
     background: var(--el-bg-color);
+  }
+
+  .loading-hide {
+    pointer-events: none;
+    transition: all 200ms;
+    opacity: 0;
   }
 
   .loading-icon {
@@ -89,7 +99,7 @@
   }
 </style>
 <body>
-<div id="loading-first">
+<div id="loading-first" >
   <div class="loading-icon">
     <svg class="circular" viewBox="0 0 20 20">
       <g class="loading-path">

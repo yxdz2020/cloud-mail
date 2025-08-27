@@ -29,18 +29,9 @@ export default defineConfig(({mode}) => {
     },
     build: {
       target: 'es2022',
-      outDir: '../mail-worker/dist',
+      outDir: env.VITE_OUT_DIR || 'dist',
       emptyOutDir: true,
-      rollupOptions: {
-        output: {
-          manualChunks(id) {
-            return 'main'
-          },
-          chunkFileNames: 'assets/[name]-[hash].js',
-          entryFileNames: 'assets/[name]-[hash].js',
-        }
-      },
-      assetsInclude: ['**/*.json'],
+      assetsInclude: ['**/*.json']
     }
   }
 })
