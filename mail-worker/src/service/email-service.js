@@ -1,7 +1,7 @@
 import orm from '../entity/orm';
 import email from '../entity/email';
 import { attConst, emailConst, isDel, settingConst } from '../const/entity-const';
-import { and, desc, eq, gt, inArray, lt, count, asc, sql, ne, or } from 'drizzle-orm';
+import { and, desc, eq, gt, inArray, lt, count, asc, sql, ne, or, like, lte, gte } from 'drizzle-orm';
 import { star } from '../entity/star';
 import settingService from './setting-service';
 import accountService from './account-service';
@@ -614,6 +614,52 @@ const emailService = {
 			isDel: isDel.NORMAL,
 			status: status
 		}).where(eq(email.emailId, emailId)).returning().get();
+	},
+
+	async batchDelete(c, params) {
+		let { sendName, sendEmail, toEmail, subject, startTime, endTime, type  } = params
+
+		let right = type === 'left' || type === 'include'
+		let left = type === 'include'
+
+		const conditions = []
+
+		if (sendName) {
+			conditions.push(like(email.name,`${left ? '%' : ''}${sendName}${right ? '%' : ''}`))
+		}
+
+		if (subject) {
+			conditions.push(like(email.subject,`${left ? '%' : ''}${subject}${right ? '%' : ''}`))
+		}
+
+		if (sendEmail) {
+			conditions.push(like(email.sendEmail,`${left ? '%' : ''}${sendEmail}${right ? '%' : ''}`))
+		}
+
+		if (toEmail) {
+			conditions.push(like(email.toEmail,`${left ? '%' : ''}${toEmail}${right ? '%' : ''}`))
+		}
+
+		if (startTime && endTime) {
+			conditions.push(gte(email.createTime,`${startTime}`))
+			conditions.push(lte(email.createTime,`${endTime}`))
+		}
+
+		if (conditions.length === 0) {
+			return;
+		}
+
+		const emailIdsRow = await orm(c).select({emailId: email.emailId}).from(email).where(conditions.length > 1 ? and(...conditions) : conditions[0]).all();
+
+		const emailIds = emailIdsRow.map(row => row.emailId);
+
+		if (emailIds.length === 0){
+			return;
+		}
+
+		await attService.deleteByEmailIds(c, emailIds);
+
+		await orm(c).delete(email).where(conditions.length > 1 ? and(...conditions) : conditions[0]).run();
 	}
 };
 

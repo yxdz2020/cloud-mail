@@ -11,7 +11,7 @@
       <div class="header-left" :style="'padding-left:' + actionLeft">
 
         <slot name="first"></slot>
-        <Icon class="icon" icon="ion:reload" width="18" height="18" @click="refresh"/>
+        <Icon class="icon reload" icon="ion:reload" width="18" height="18" @click="refresh"/>
         <Icon v-perm="'email:delete'" class="icon" icon="uiw:delete" width="16" height="16"
               v-if="getSelectedMailsIds().length > 0"
               @click="handleDelete"/>
@@ -879,6 +879,7 @@ function loadData() {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
+    position: relative;
     column-gap: 18px;
     row-gap: 8px;
     padding-left: 2px;
@@ -910,7 +911,7 @@ function loadData() {
 }
 
 .del-status {
-  color: var(--el-color-danger);
+  color: var(--el-color-info);
   display: flex;
   align-items: center;
   justify-content: center;

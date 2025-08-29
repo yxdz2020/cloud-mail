@@ -45,6 +45,7 @@ const zhTW = {
 	roleNameExist: '角色名稱已存在',
 	delDefRole: '預設角色不可刪除',
 	notJsonDomain: '環境變數 "domain" 必須為 JSON 格式',
+	noDomainVariable: '環境變數 domain 不能為空',
 	noOsUpBack: '無法上傳背景：R2 物件儲存未設定',
 	noOsDomainUpBack: '無法上傳背景：R2 網域未設定',
 	starNotExistEmail: '已加星標的郵件不存在',

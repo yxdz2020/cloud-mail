@@ -281,7 +281,16 @@ const en = {
     noRecipientDesc: 'Emails can be received even without a registered email address.',
     preview: 'Preview',
     help: 'Help',
-    document: 'Document'
+    document: 'Document',
+    clearEmail: 'Email Cleanup',
+    sendEmailAddress: 'From Email',
+    toEmail: 'To Email',
+    equal: 'Equal',
+    leading: 'Leading',
+    to: 'To',
+    clear: 'Clear',
+    include: 'Include',
+    delAllEmailConfirm: 'Do you really want to delete it?'
 }
 
 export default en
