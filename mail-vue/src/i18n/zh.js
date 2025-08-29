@@ -281,7 +281,16 @@ const zh = {
     noRecipientDesc: '即使没有注册的邮箱也能收到邮件',
     preview: '预览',
     help: '帮助',
-    document: '项目文档'
+    document: '项目文档',
+    clearEmail: '邮件清除',
+    sendEmailAddress: '发件人邮箱',
+    toEmail: '收件人邮箱',
+    equal: '等值',
+    leading: '左匹配',
+    to: '至',
+    clear: '清除',
+    include: '包含',
+    delAllEmailConfirm: '确定要删除吗？'
 
 }
 export default zh

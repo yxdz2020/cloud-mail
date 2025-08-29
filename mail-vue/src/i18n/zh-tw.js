@@ -281,6 +281,15 @@ const zhTW = {
     noRecipientDesc: '即使未註冊郵件地址也可接收郵件。',
     preview: '預覽',
     help: '說明',
-    document: '文件'
+    document: '文件',
+    clearEmail: '郵件清除',
+    sendEmailAddress: '寄件人電子郵件',
+    toEmail: '收件人電子郵件',
+    equal: '等值',
+    leading: '左匹配',
+    to: '至',
+    clear: '清除',
+    include: '包含',
+    delAllEmailConfirm: '您確定要刪除嗎？'
 }
 export default zhTW

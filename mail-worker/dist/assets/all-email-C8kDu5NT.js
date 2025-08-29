@@ -1,0 +1,1 @@
+import{aB as a}from"./index-BtzXKQwE.js";function t(l){return a.get("/allEmail/list",{params:{...l}})}function i(l){return a.delete("/allEmail/delete?emailIds="+l)}function m(l){return a.delete("/allEmail/batchDelete",{params:l})}export{i as a,m as b,t as c};

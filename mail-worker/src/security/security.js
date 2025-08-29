@@ -70,7 +70,7 @@ const premKey = {
 	'user:set-type': ['/user/setType'],
 	'user:delete': ['/user/delete'],
 	'all-email:query': ['/allEmail/list'],
-	'all-email:delete': ['/allEmail/delete'],
+	'all-email:delete': ['/allEmail/delete','/allEmail/batchDelete'],
 	'setting:query': ['/setting/query'],
 	'setting:set': ['/setting/set', '/setting/setBackground'],
 	'setting:clean': ['/setting/physicsDeleteAll'],

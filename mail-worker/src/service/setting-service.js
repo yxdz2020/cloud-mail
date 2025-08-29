@@ -21,8 +21,10 @@ const settingService = {
 	},
 
 	async query(c) {
+
 		const setting = await c.env.kv.get(KvConst.SETTING, { type: 'json' });
 		let domainList = c.env.domain;
+
 		if (typeof domainList === 'string') {
 			try {
 				domainList = JSON.parse(domainList)
@@ -30,6 +32,11 @@ const settingService = {
 				throw new BizError(t('notJsonDomain'));
 			}
 		}
+
+		if (!c.env.domain) {
+			throw new BizError(t('noDomainVariable'));
+		}
+
 		domainList = domainList.map(item => '@' + item);
 		setting.domainList = domainList;
 		return setting;

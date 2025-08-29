@@ -160,6 +160,33 @@ const attService = {
 				eq(att.type, attConst.type.ATT)
 			))
 			.all();
+	},
+
+	async deleteByEmailIds(c, emailIds) {
+
+		const queryAttSql = emailIds.map(emailId => c.env.db.prepare(`SELECT key,att_id FROM attachments WHERE email_id = ${emailId} GROUP BY key HAVING COUNT(*) = 1;`))
+		const attListResult = await c.env.db.batch(queryAttSql);
+
+		const delKeyList = attListResult.flatMap(r => r.results.map(row => row.key));
+
+		if (delKeyList.length > 0) {
+			await this.batchDelete(c, delKeyList)
+		}
+
+		const delAttSql = emailIds.map(emailId => c.env.db.prepare(`DELETE FROM attachments WHERE email_id = ${emailId}`))
+		await c.env.db.batch(delAttSql);
+	},
+
+	async batchDelete(c, keys) {
+		if (!keys.length) return;
+
+		const BATCH_SIZE = 1000;
+
+		for (let i = 0; i < keys.length; i += BATCH_SIZE) {
+			const batch = keys.slice(i, i + BATCH_SIZE);
+			await r2Service.delete(c, batch);
+		}
+
 	}
 };
 
