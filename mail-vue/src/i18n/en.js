@@ -136,8 +136,6 @@ const en = {
     loginDomain: 'Sign-In Box Domain',
     multipleEmail: 'Multiple Accounts',
     multipleEmailDesc: 'Enable this feature to allow users to add multiple accounts.',
-    physicallyWipeData: 'Physically Wipe Data',
-    physicallyWipeDataDesc: 'This action will permanently erase all deleted data.',
     customization: 'Customization',
     websiteTitle: 'Title',
     loginBoxOpacity: 'Login Box Opacity',
@@ -148,7 +146,7 @@ const en = {
     autoRefreshDesc: 'Automatically fetch the latest emails from the server.',
     sendEmail: 'Send Email',
     resendToken: 'Resend Token',
-    R2OS: 'R2 Object Storage',
+    oss: 'Object Storage',
     osDomain: 'Domain',
     emailPush: 'Email Push',
     tgBot: 'Telegram Bot',
@@ -290,7 +288,8 @@ const en = {
     to: 'To',
     clear: 'Clear',
     include: 'Include',
-    delAllEmailConfirm: 'Do you really want to delete it?'
+    delAllEmailConfirm: 'Do you really want to delete it?',
+    s3Configuration: 'S3 Configuration'
 }
 
 export default en

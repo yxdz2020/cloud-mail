@@ -17,12 +17,18 @@ const settingService = {
 	async refresh(c) {
 		const settingRow = await orm(c).select().from(setting).get();
 		settingRow.resendTokens = JSON.parse(settingRow.resendTokens);
+		c.set('setting', settingRow);
 		await c.env.kv.put(KvConst.SETTING, JSON.stringify(settingRow));
 	},
 
 	async query(c) {
 
+		if (c.get?.('setting')) {
+			return c.get('setting')
+		}
+
 		const setting = await c.env.kv.get(KvConst.SETTING, { type: 'json' });
+
 		let domainList = c.env.domain;
 
 		if (typeof domainList === 'string') {
@@ -39,6 +45,7 @@ const settingService = {
 
 		domainList = domainList.map(item => '@' + item);
 		setting.domainList = domainList;
+		c.set?.('setting', setting);
 		return setting;
 	},
 
@@ -49,10 +56,16 @@ const settingService = {
 			verifyRecordService.selectListByIP(c)
 		]);
 
+		settingRow.siteKey = settingRow.siteKey ? `${settingRow.siteKey.slice(0, 12)}******` : null;
 		settingRow.secretKey = settingRow.secretKey ? `${settingRow.secretKey.slice(0, 12)}******` : null;
+
 		Object.keys(settingRow.resendTokens).forEach(key => {
 			settingRow.resendTokens[key] = `${settingRow.resendTokens[key].slice(0, 12)}******`;
 		});
+
+		settingRow.s3AccessKey = settingRow.s3AccessKey ? `${settingRow.s3AccessKey.slice(0, 12)}******` : null;
+		settingRow.s3SecretKey = settingRow.s3SecretKey ? `${settingRow.s3SecretKey.slice(0, 12)}******` : null;
+		settingRow.hasR2 = !!c.env.r2
 
 		let regVerifyOpen = false
 		let addVerifyOpen = false
@@ -91,7 +104,7 @@ const settingService = {
 
 		if (background && !background.startsWith('http')) {
 
-			if (!c.env.r2) {
+			if (!await r2Service.hasOSS(c)) {
 				throw new BizError(t('noOsUpBack'));
 			}
 
@@ -106,7 +119,9 @@ const settingService = {
 
 
 			await r2Service.putObj(c, background, arrayBuffer, {
-				contentType: file.type
+				contentType: file.type,
+				cacheControl: `public, max-age=31536000, immutable`,
+				contentDisposition: `inline; filename="${file.name}"`
 			});
 
 		}
@@ -122,12 +137,6 @@ const settingService = {
 		await orm(c).update(setting).set({ background }).run();
 		await this.refresh(c);
 		return background;
-	},
-
-	async physicsDeleteAll(c) {
-		await emailService.physicsDeleteAll(c);
-		await accountService.physicsDeleteAll(c);
-		await userService.physicsDeleteAll(c);
 	},
 
 	async websiteConfig(c) {

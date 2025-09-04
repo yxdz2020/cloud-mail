@@ -45,14 +45,14 @@
                 <div class="email-sender" :style=" showStatus ? 'gap: 10px;' : ''">
                   <div class="email-status" v-if="showStatus">
                     <el-tooltip v-if="item.status ===  0" effect="dark" :content="$t('received')">
-                      <Icon icon="ic:round-mark-email-read" style="color: #67C23A" width="20" height="20"/>
+                      <Icon icon="ic:round-mark-email-read" style="color: #51C76B" width="20" height="20"/>
                       />
                     </el-tooltip>
                     <el-tooltip v-if="item.status ===  1" effect="dark" :content="$t('sent')">
-                      <Icon icon="bi:send-arrow-up-fill" style="color: #67C23A" width="20" height="20"/>
+                      <Icon icon="bi:send-arrow-up-fill" style="color: #51C76B" width="20" height="20"/>
                     </el-tooltip>
                     <el-tooltip v-if="item.status ===  2" effect="dark" :content="$t('delivered')">
-                      <Icon icon="bi:send-check-fill" style="color: #67C23A" width="20" height="20"/>
+                      <Icon icon="bi:send-check-fill" style="color: #51C76B" width="20" height="20"/>
                     </el-tooltip>
                     <el-tooltip v-if="item.status ===  3" effect="dark" :content="$t('bounced')">
                       <Icon icon="bi:send-x-fill" style="color: #F56C6C" width="20" height="20"/>
@@ -238,7 +238,7 @@ let scrollTop = 0
 const latestEmail = ref(null)
 const scrollbarRef = ref(null)
 let reqLock = false
-let isMobile = innerWidth < 1025
+let isMobile = innerWidth < 1367
 let skeletonRows = 0
 const queryParam = reactive({
   emailId: 0,
@@ -632,7 +632,7 @@ function loadData() {
     margin-top: 5px;
     margin-bottom: 2px;
     color: var(--email-scroll-content-color);
-    @media (max-width: 1199px) {
+    @media (max-width: 1366px) {
       flex-direction: column;
     }
 
@@ -673,7 +673,7 @@ function loadData() {
     padding-left: 15px;
     padding-right: 20px;
     justify-content: center;
-    @media (min-width: 1200px) {
+    @media (min-width: 1367px) {
       justify-content: start;
       height: 100%;
       align-self: start;
@@ -682,7 +682,7 @@ function loadData() {
   }
 
   .title-column {
-    @media (max-width: 1199px) {
+    @media (max-width: 1366px) {
       grid-template-columns: 1fr !important;
       gap: 4px !important;
     }
@@ -692,10 +692,10 @@ function loadData() {
     flex: 1;
     display: grid;
     grid-template-columns: 240px 1fr;
-    @media (max-width: 1199px) {
+    @media (max-width: 1366px) {
       padding-right: 15px;
     }
-    @media (max-width: 1024px) {
+    @media (max-width: 1366px) {
       grid-template-columns: 1fr;
       gap: 4px;
     }
@@ -710,7 +710,7 @@ function loadData() {
         display: flex;
         flex-direction: column;
         align-content: center;
-        @media (max-width: 1199px) {
+        @media (max-width: 1366px) {
           flex-direction: row;
           gap: 5px;
         }
@@ -720,7 +720,7 @@ function loadData() {
         display: grid;
         gap: 5px;
         grid-template-columns: auto 1fr;
-        @media (min-width: 1024px) {
+        @media (min-width: 1366px) {
           grid-template-columns: 1fr;
           > span:last-child {
             display: none;
@@ -745,7 +745,7 @@ function loadData() {
       .phone-time {
         font-weight: normal;
         font-size: 12px;
-        @media (min-width: 1200px) {
+        @media (min-width: 1367px) {
           display: none;
         }
       }
@@ -755,7 +755,7 @@ function loadData() {
       .text-skeleton-one {
         width: 80%;
         height: 16px;
-        @media (max-width: 1199px) {
+        @media (max-width: 1366px) {
           width: 40%;
         }
         @media (max-width: 767px) {
@@ -766,10 +766,10 @@ function loadData() {
       .text-skeleton-two {
         width: min(300px, 100%);
         height: 16px;
-        @media (min-width: 1200px) {
+        @media (min-width: 1367px) {
           display: none;
         }
-        @media (max-width: 1199px) {
+        @media (max-width: 1366px) {
           width: 100%;
         }
       }
@@ -778,7 +778,7 @@ function loadData() {
     .email-text {
       display: grid;
       grid-template-columns: auto 1fr;
-      @media (max-width: 1199px) {
+      @media (max-width: 1366px) {
         grid-template-columns: 1fr;
       }
 
@@ -786,7 +786,7 @@ function loadData() {
         overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;
-        @media (min-width: 1200px) {
+        @media (min-width: 1367px) {
           padding-left: 5px;
         }
       }
@@ -797,7 +797,7 @@ function loadData() {
         text-overflow: ellipsis;
         padding-left: 10px;
         color: var(--email-scroll-content-color);
-        @media (max-width: 1199px) {
+        @media (max-width: 1366px) {
           padding-left: 0;
           margin-top: 0;
         }
@@ -813,13 +813,13 @@ function loadData() {
     display: flex;
     padding-left: 15px;
     align-items: center;
-    @media (max-width: 1199px) {
+    @media (max-width: 1366px) {
       display: none;
     }
   }
 
   .email-right-skeleton {
-    @media (max-width: 1199px) {
+    @media (max-width: 1366px) {
       display: none;
     }
   }
@@ -844,7 +844,7 @@ function loadData() {
   width: 40px;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1366px) {
   .pc-star {
     display: none;
   }

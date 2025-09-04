@@ -115,7 +115,7 @@ import {Icon} from "@iconify/vue";
   width: 40px;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1366px) {
   .pc-star {
     display: none;
   }

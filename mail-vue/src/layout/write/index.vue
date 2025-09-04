@@ -40,7 +40,7 @@
           </div>
           <div class="att-list">
             <div class="att-item" v-for="(item,index) in form.attachments" :key="index">
-              <Icon :icon="getIconByName(item.filename)" width="20" height="20"/>
+              <Icon v-bind="getIconByName(item.filename)"/>
               <span class="att-filename">{{ item.filename }}</span>
               <span class="att-size">{{ formatBytes(item.size) }}</span>
               <Icon style="cursor: pointer;" icon="material-symbols-light:close-rounded" @click="delAtt(index)"
@@ -68,6 +68,7 @@ import {useEmailStore} from "@/store/email.js";
 import {fileToBase64, formatBytes} from "@/utils/file-utils.js";
 import {getIconByName} from "@/utils/icon-utils.js";
 import sendPercent from "@/components/send-percent/index.vue"
+import {toOssDomain} from "@/utils/convert.js";
 import {formatDetailDate} from "@/utils/day.js";
 import {useSettingStore} from "@/store/setting.js";
 import {userDraftStore} from "@/store/draft.js";
@@ -336,7 +337,7 @@ function openReply(email) {
 function formatImage(content) {
   content = content || '';
   const domain = settingStore.settings.r2Domain;
-  return content.replace(/{{domain}}/g, domain + '/');
+  return content.replace(/{{domain}}/g, toOssDomain(domain) + '/');
 }
 
 function open() {
@@ -440,7 +441,7 @@ function close() {
 
   .write-box {
     background: var(--el-bg-color);
-    width: min(1200px, calc(100% - 80px));
+    width: min(1367px, calc(100% - 80px));
     box-shadow: var(--el-box-shadow-light);
     border: 1px solid var(--el-border-color-light);
     transition: var(--el-transition-duration);
@@ -453,6 +454,7 @@ function close() {
       width: 100%;
       height: 100%;
       border-radius: 0;
+      border: 0;
       padding-top: 10px;
     }
 
@@ -560,10 +562,9 @@ function close() {
             gap: 5px;
             height: 32px;
             font-size: 14px;
-            border: 1px solid var(--el-border-color-light);
-            padding: 5px 5px;
+            padding: 4px 5px;
+            background: var(--light-ill);
             border-radius: 4px;
-
             .att-filename {
               white-space: nowrap;
               text-overflow: ellipsis;
