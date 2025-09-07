@@ -187,7 +187,7 @@
           <div class="settings-card">
             <div class="card-title">{{ $t('oss') }}</div>
             <div class="card-content">
-              <div class="setting-item">
+              <div class="r2domain-item">
                 <div><span>{{ $t('osDomain') }}</span></div>
                 <div class="r2domain">
                   <span>{{ setting.r2Domain || '' }}</span>
@@ -199,9 +199,7 @@
               <div class="setting-item">
                 <div><span>{{ $t('s3Configuration') }}</span></div>
                 <div class="r2domain">
-                  <el-button @mouseenter="s3IsDisabled = true"
-                             @mouseleave="s3IsDisabled = false"
-                             :disabled="setting.hasR2 && s3IsDisabled" class="opt-button" size="small" type="primary" @click="addS3Show = true">
+                  <el-button class="opt-button" size="small" type="primary" @click="addS3Show = true">
                     <Icon icon="fluent:settings-48-regular" width="16" height="16"/>
                   </el-button>
                 </div>
@@ -699,7 +697,6 @@ const r2DomainInput = ref('')
 const loginOpacity = ref(0)
 const backgroundUrl = ref('')
 let backgroundFile = {}
-const s3IsDisabled = ref(false)
 const showSetBackground = ref(false)
 let regVerifyCount = ref(1)
 let addVerifyCount = ref(1)
@@ -1345,6 +1342,21 @@ function editSetting(settingForm, refreshStatus = true) {
     grid-template-columns: 1fr auto;
     justify-items: flex-end;
     font-weight: normal;
+  }
+}
+
+.r2domain-item {
+  display: flex;
+  gap: 10px;
+  > div:first-child {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  > div:last-child {
+    flex: 1;
+    text-align: right;
   }
 }
 

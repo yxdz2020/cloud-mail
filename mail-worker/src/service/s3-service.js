@@ -28,39 +28,62 @@ const s3Service = {
 		await client.send(new PutObjectCommand(obj))
 	},
 
-	async deleteObj(c,keys) {
+	async deleteObj(c, keys) {
 
 		if (typeof keys === 'string') {
-			keys = [keys]
+			keys = [keys];
 		}
 
 		if (keys.length === 0) {
-			return
+			return;
 		}
 
-		const client = await this.client(c)
-
+		const client = await this.client(c);
 		const { bucket } = await settingService.query(c);
+
+
+		client.middlewareStack.add(
+			(next) => async (args) => {
+
+				const body = args.request.body
+
+				// 计算 MD5 校验和并转换为 Base64 编码
+				const encoder = new TextEncoder();
+				const data = encoder.encode(body);
+
+				// 使用 Web Crypto API 计算 MD5 校验和
+				const hashBuffer = await crypto.subtle.digest('MD5', data);
+				const hashArray = new Uint8Array(hashBuffer);
+				const contentMD5 = btoa(String.fromCharCode.apply(null, hashArray));
+
+				args.request.headers["Content-MD5"] = contentMD5;
+
+				return next(args);
+			},
+			{ step: "build", name: "inspectRequestMiddleware" }
+		);
+
 
 		await client.send(
 			new DeleteObjectsCommand({
 				Bucket: bucket,
 				Delete: {
-					Objects: keys.map(key => ({Key: key}))
+					Objects: keys.map(key => ({ Key: key }))
 				}
 			})
-		)
+		);
 	},
+
 
 	async client(c) {
 		const { region, endpoint, s3AccessKey, s3SecretKey } = await settingService.query(c);
 		return new S3Client({
-			region: region,
+			region: region || 'auto',
 			endpoint: domainUtils.toOssDomain(endpoint),
 			credentials: {
 				accessKeyId: s3AccessKey,
 				secretAccessKey: s3SecretKey,
-			},
+			}
 		});
 	}
 }
