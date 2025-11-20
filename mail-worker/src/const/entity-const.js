@@ -43,6 +43,10 @@ export const emailConst = {
 		SAVING: 6,
 		NOONE: 7,
 		FAILED: 8
+	},
+	unread: {
+		UNREAD: 0,
+		READ: 1
 	}
 }
 

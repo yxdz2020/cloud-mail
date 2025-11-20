@@ -15,6 +15,9 @@
         <Icon v-perm="'email:delete'" class="icon delete" icon="uiw:delete" width="16" height="16"
               v-if="getSelectedMailsIds().length > 0"
               @click="handleDelete"/>
+        <Icon v-perm="'email:delete'" class="icon delete" icon="fluent:mail-read-20-regular" width="21" height="21"
+              v-if="getSelectedMailsIds().length > 0 && showUnread"
+              @click="handleRead"/>
       </div>
 
       <div class="header-right">
@@ -42,11 +45,10 @@
               <div v-if="!showStar"></div>
               <div class="title" :class="accountShow ? 'title-column' : 'title-column'">
 
-                <div class="email-sender" :style=" showStatus ? 'gap: 10px;' : ''">
+                <div class="email-sender" :style=" (showStatus ? 'gap: 10px;' : '') + ((item.unread === EmailUnreadEnum.UNREAD && showUnread)  ? 'font-weight: bold' : '')">
                   <div class="email-status" v-if="showStatus">
                     <el-tooltip v-if="item.status ===  0" effect="dark" :content="$t('received')">
                       <Icon icon="ic:round-mark-email-read" style="color: #51C76B" width="20" height="20"/>
-                      />
                     </el-tooltip>
                     <el-tooltip v-if="item.status ===  1" effect="dark" :content="$t('sent')">
                       <Icon icon="bi:send-arrow-up-fill" style="color: #51C76B" width="20" height="20"/>
@@ -75,6 +77,7 @@
                   <div v-else></div>
                   <span class="name">
                     <span>
+                      <div class="unread" v-if="isMobile && (item.unread === EmailUnreadEnum.UNREAD && showUnread) "/>
                       <slot name="name" :email="item"> {{ item.name }}</slot>
                     </span>
                     <span>
@@ -85,8 +88,9 @@
                 </div>
                 <div>
                   <div class="email-text">
-                    <span class="email-subject">
-                      <slot name="subject" :email="item">
+                    <span class="email-subject" :style="(item.unread === EmailUnreadEnum.UNREAD && showUnread)  ? 'font-weight: bold' : ''">
+                      <div class="unread" v-if="!isMobile && (item.unread === EmailUnreadEnum.UNREAD && showUnread) "/>
+                      <slot name="subject" :email="item" >
                         {{ item.subject || '\u200B' }}
                       </slot>
                     </span>
@@ -109,7 +113,7 @@
                 </div>
               </div>
               <div class="email-right" :style="showUserInfo ? 'align-self: start;':''">
-                <span class="email-time">{{ fromNow(item.createTime) }}</span>
+                <span class="email-time" :style="(item.unread === EmailUnreadEnum.UNREAD && showUnread) ? 'font-weight: bold' : ''">{{ fromNow(item.createTime) }}</span>
               </div>
             </div>
           </div>
@@ -170,10 +174,12 @@ import {useSettingStore} from "@/store/setting.js";
 import {sleep} from "@/utils/time-utils.js"
 import {fromNow} from "@/utils/day.js";
 import {useI18n} from "vue-i18n";
+import {EmailUnreadEnum} from "@/enums/email-enum.js";
 
 const props = defineProps({
   getEmailList: Function,
   emailDelete: Function,
+  emailRead: Function,
   starAdd: Function,
   starCancel: Function,
   cancelSuccess: Function,
@@ -217,6 +223,10 @@ const props = defineProps({
   showFirstLoading: {
     type: Boolean,
     default: true
+  },
+  showUnread: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -238,7 +248,7 @@ let scrollTop = 0
 const latestEmail = ref(null)
 const scrollbarRef = ref(null)
 let reqLock = false
-let isMobile = innerWidth < 1367
+let isMobile = ref(innerWidth < 1367)
 let skeletonRows = 0
 const queryParam = reactive({
   emailId: 0,
@@ -265,6 +275,10 @@ getEmailList()
 onBeforeRouteLeave(() => {
   scrollTop = scroll.value.scrollTop
 })
+
+window.onresize = () => {
+  isMobile = innerWidth < 1367
+}
 
 watch(
     () => emailList.map(item => item.checked),
@@ -370,6 +384,18 @@ function starChange(email) {
 
 function changeAccountShow() {
   uiStore.accountShow = !uiStore.accountShow;
+}
+
+const handleRead = () => {
+  const emailIds = getSelectedMailsIds();
+  props.emailRead(emailIds);
+  emailIds.forEach(emailId => {
+    const index = emailList.findIndex(email => email.emailId === emailId);
+    if (index > -1) {
+      emailList[index].unread = EmailUnreadEnum.READ;
+      emailList[index].checked = false;
+    }
+  })
 }
 
 const handleDelete = () => {
@@ -701,7 +727,6 @@ function loadData() {
     }
 
     .email-sender {
-      font-weight: bold;;
       color: var(--el-text-color-primary);
       display: grid;
       grid-template-columns: auto 1fr auto;
@@ -875,7 +900,7 @@ function loadData() {
 
 .header-actions {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto 1fr auto auto;
   align-items: center;
   gap: 15px;
   padding: 3px 15px;
@@ -886,7 +911,7 @@ function loadData() {
     flex-wrap: wrap;
     align-items: center;
     position: relative;
-    column-gap: 18px;
+    column-gap: 20px;
     row-gap: 8px;
     padding-left: 2px;
     color: var(--el-text-color-primary);;
@@ -923,6 +948,17 @@ function loadData() {
   justify-content: center;
   position: relative;
   bottom: 1px;
+}
+
+.unread {
+  height: 6px;
+  width: 6px;
+  background: var(--el-color-primary);
+  margin-bottom: 2px;
+  margin-right: 5px;
+  border-radius: 50%;
+  display: inline-block;
+  justify-content: center;
 }
 
 ul {

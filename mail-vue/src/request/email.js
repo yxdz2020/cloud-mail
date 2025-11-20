@@ -12,6 +12,10 @@ export function emailLatest(emailId, accountId) {
     return http.get('/email/latest', {params: {emailId, accountId}, noMsg: true })
 }
 
+export function emailRead(emailIds) {
+    return http.put('/email/read', {emailIds}, {noMsg: true})
+}
+
 export function emailSend(form,progress) {
     return http.post('/email/send', form,{
         onUploadProgress: (e) => {

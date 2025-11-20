@@ -29,3 +29,8 @@ app.post('/email/send', async (c) => {
 	return c.json(result.ok(email));
 });
 
+app.put('/email/read', async (c) => {
+	await emailService.read(c, await c.req.json(), userContext.getUserId(c));
+	return c.json(result.ok());
+})
+

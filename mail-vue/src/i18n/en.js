@@ -1,5 +1,5 @@
 const en = {
-    '收件箱': 'Inbox',
+    inbox: 'Inbox',
     drafts: 'Drafts',
     sent: 'Sent',
     starred: 'Starred',
@@ -307,7 +307,9 @@ const en = {
     emailText: 'Email Text',
     emailPrefix: 'Email Prefix',
     atLeast: 'At Least',
-    character: ''
+    character: '',
+    mustNotContain: 'Must Not Contain',
+    mustNotContainDesc: 'Separate with commas'
 }
 
 export default en

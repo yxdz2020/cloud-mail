@@ -16,7 +16,7 @@ const routes = [
                 name: 'email',
                 component: () => import('@/views/email/index.vue'),
                 meta: {
-                    title: '收件箱',
+                    title: 'inbox',
                     name: 'email',
                     menu: true
                 }

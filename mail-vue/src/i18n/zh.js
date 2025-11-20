@@ -1,5 +1,5 @@
 const zh = {
-    '收件箱': '收件箱',
+    inbox: '收件箱',
     drafts: '草稿箱',
     sent: '已发送',
     starred: '星标邮件',
@@ -192,8 +192,8 @@ const zh = {
     emptyEmailMsg: '邮箱不能为空',
     notEmailMsg: '输入的邮箱不合法',
     emptyPwdMsg: '密码不能为空',
-    pwdLengthMsg: '密码最少六位',
-    minEmailPrefix: '邮箱名不能小于{msg}位',
+    pwdLengthMsg: '密码至少六位',
+    minEmailPrefix: '邮箱名至少{msg}位',
     confirmPwdFailMsg: '两次密码输入不一致',
     emptyRegKeyMsg: '注册码不能为空',
     regSuccessMsg: '注册成功',
@@ -228,7 +228,7 @@ const zh = {
     banRestore: '确认禁用 {msg} 吗？',
     logOut: '退出',
     clearContentConfirm: '确定要清空所有内容吗？',
-    attLimitMsg: '附件大小限制28mb',
+    attLimitMsg: '附件不能超过28MB',
     emptyRecipientMsg: '收件人邮箱地址不能为空',
     emptySubjectMsg: '主题不能为空',
     emptyContentMsg: '邮件正文不能为空',
@@ -307,6 +307,8 @@ const zh = {
     emailText: '邮件文本',
     emailPrefix: '邮箱前缀',
     atLeast: '至少',
-    character: '位'
+    character: '位',
+    mustNotContain: '禁止包含',
+    mustNotContainDesc: '输入多个值用,分开'
 }
 export default zh
