@@ -58,6 +58,8 @@ const settingService = {
 		setting.linuxdoCallbackUrl = c.env.linuxdo_callback_url;
 		setting.linuxdoSwitch = linuxdoSwitch;
 
+		setting.emailPrefixFilter = setting.emailPrefixFilter.split(",").filter(Boolean);
+
 		c.set?.('setting', setting);
 		return setting;
 	},
@@ -108,6 +110,11 @@ const settingService = {
 		Object.keys(resendTokens).forEach(domain => {
 			if (!resendTokens[domain]) delete resendTokens[domain];
 		});
+
+		if (Array.isArray(params.emailPrefixFilter)) {
+			params.emailPrefixFilter = params.emailPrefixFilter + '';
+		}
+
 		params.resendTokens = JSON.stringify(resendTokens);
 		await orm(c).update(setting).set({ ...params }).returning().get();
 		await this.refresh(c);

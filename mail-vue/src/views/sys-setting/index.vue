@@ -713,15 +713,20 @@
           </div>
         </form>
       </el-dialog>
-      <el-dialog v-model="emailPrefixShow" :title="t('emailPrefix')" width="30"  >
+      <el-dialog v-model="emailPrefixShow" :title="t('emailPrefix')"  @closed="resetEmailPrefix"  >
         <div class="email-prefix">
           <div>{{ t('atLeast') }}</div>
-          <el-input-number v-model="minEmailPrefix" :min="1" :max="20" @change="EmailPrefixChange" style="width: 150px" >
+          <el-input-number v-model="minEmailPrefix" :min="1" :max="20" style="width: 150px" >
             <template #suffix>
               <span>{{ t('character') }}</span>
             </template>
           </el-input-number>
         </div>
+        <div class="prefix-filter">
+          <div style="margin-bottom: 10px;">{{ t('mustNotContain') }}</div>
+          <el-input-tag style="margin-bottom: 10px;" v-model="emailPrefixFilter" :placeholder="t('mustNotContainDesc')"  />
+        </div>
+        <el-button type="primary" style="width: 100%;" :loading="settingLoading" @click="saveEmailPrefix">{{ $t('save') }}</el-button>
       </el-dialog>
     </el-scrollbar>
   </div>
@@ -777,6 +782,7 @@ const clearS3Loading = ref(false)
 const r2DomainInput = ref('')
 const loginOpacity = ref(0)
 const minEmailPrefix = ref(0)
+const emailPrefixFilter = ref([])
 const backgroundUrl = ref('')
 let backgroundFile = {}
 const showSetBackground = ref(false)
@@ -868,6 +874,7 @@ function getSettings() {
     regVerifyCount.value = setting.value.regVerifyCount
     resetNoticeForm()
     resetAddS3Form()
+    resetEmailPrefix()
   })
 }
 
@@ -1137,16 +1144,17 @@ function doOpacityChange() {
   editSetting(form, true)
 }
 
-function doEmailPrefix() {
-  const form = {}
-  form.minEmailPrefix = minEmailPrefix.value
-  editSetting(form, true)
+function resetEmailPrefix() {
+  minEmailPrefix.value = setting.value.minEmailPrefix
+  emailPrefixFilter.value = setting.value.emailPrefixFilter
 }
 
-const EmailPrefixChange = debounce(doEmailPrefix, 1000, {
-  leading: false,
-  trailing: true
-})
+function saveEmailPrefix() {
+  const form = {}
+  form.minEmailPrefix = minEmailPrefix.value
+  form.emailPrefixFilter = emailPrefixFilter.value
+  editSetting(form, true)
+}
 
 const opacityChange = debounce(doOpacityChange, 1000, {
   leading: false,
@@ -1314,9 +1322,9 @@ function editSetting(settingForm, refreshStatus = true) {
     regVerifyCountShow.value = false
     noticePopupShow.value = false
     addS3Show.value = false
+    emailPrefixShow.value = false
   }).catch((e) => {
     loginOpacity.value = setting.value.loginOpacity
-    minEmailPrefix.value = setting.value.minEmailPrefix
     setting.value = {...setting.value, ...JSON.parse(backup)}
   }).finally(() => {
     settingLoading.value = false
@@ -1673,6 +1681,11 @@ function editSetting(settingForm, refreshStatus = true) {
 .email-prefix {
   display: flex;
   justify-content: space-between;
+}
+
+.prefix-filter {
+  display: flex;
+  flex-direction: column;
 }
 
 .s3-button {

@@ -18,10 +18,10 @@ http.interceptors.response.use((res) => {
 
         return new Promise((resolve, reject) => {
 
-            const showMsg = res.config.noMsg;
+            const noMsg = res.config.noMsg;
             const data = res.data
 
-            if (showMsg) {
+            if (noMsg) {
 
                 data.code === 200 ? resolve(data.data) : reject(data)
 
@@ -76,9 +76,9 @@ http.interceptors.response.use((res) => {
             return;
         }
 
-        const showMsg = error.config.noMsg;
+        const noMsg = error.config.noMsg;
 
-        if (showMsg) {
+        if (noMsg) {
             return Promise.reject(error)
         } else if (error.message.includes('Network Error')) {
             ElMessage({

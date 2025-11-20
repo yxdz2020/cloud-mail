@@ -17,7 +17,7 @@ const accountService = {
 
 	async add(c, params, userId) {
 
-		const {addEmailVerify , addEmail, manyEmail, addVerifyCount, minEmailPrefix} = await settingService.query(c);
+		const { addEmailVerify , addEmail, manyEmail, addVerifyCount, minEmailPrefix, emailPrefixFilter } = await settingService.query(c);
 
 		let { email, token } = params;
 
@@ -41,6 +41,10 @@ const accountService = {
 
 		if (emailUtils.getName(email).length < minEmailPrefix) {
 			throw new BizError(t('minEmailPrefix', { msg: minEmailPrefix } ));
+		}
+
+		if (emailPrefixFilter.some(content => emailUtils.getName(email).includes(content))) {
+			throw new BizError(t('banEmailPrefix'));
 		}
 
 		let accountRow = await this.selectByEmailIncludeDel(c, email);

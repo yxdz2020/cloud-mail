@@ -9,7 +9,7 @@
         <el-menu-item @click="router.push({name: 'email'})" index="email"
                       :class="route.meta.name === 'email' ? 'choose-item' : ''">
           <Icon icon="hugeicons:mailbox-01" width="20" height="20" />
-          <span class="menu-name" style="margin-left: 21px">{{$t('收件箱')}}</span>
+          <span class="menu-name" style="margin-left: 21px">{{$t('inbox')}}</span>
         </el-menu-item>
         <el-menu-item @click="router.push({name: 'send'})" index="send" v-perm="'email:send'"
                       :class="route.meta.name === 'send' ? 'choose-item' : ''">
@@ -96,8 +96,17 @@ const route = useRoute();
   color: #ffffff;
   background: linear-gradient(135deg, #1890ff, #3a80dd);
   transition: all 0.3s ease;
+  max-width: 240px;
+  padding: 0 10px;
+  > div {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    max-width: calc(240px - 20px - 30px);
+  }
 
   :deep(.el-icon) {
+    flex-shrink: 0;
     font-size: 20px;
   }
 
