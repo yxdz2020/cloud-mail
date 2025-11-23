@@ -447,13 +447,16 @@ function addItem(email) {
   if (props.timeSort) {
     if (noLoading.value) {
       emailList.push(email)
-      latestEmail.value = email
-      total.value++
-    } else {
-      total.value++
     }
+
+    if (email.emailId > latestEmail.value.emailId) {
+      latestEmail.value = email
+    }
+
+    total.value++
     return;
   }
+
 
   const index = emailList.findIndex(item => item.emailId < email.emailId)
 
@@ -463,6 +466,10 @@ function addItem(email) {
     if (noLoading.value) {
       emailList.push(email)
     }
+  }
+
+  if (email.emailId > latestEmail.value.emailId) {
+    latestEmail.value = email
   }
 
   total.value++
