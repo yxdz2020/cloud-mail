@@ -309,7 +309,8 @@ const en = {
     atLeast: 'At Least',
     character: '',
     mustNotContain: 'Must Not Contain',
-    mustNotContainDesc: 'Separate with commas'
+    mustNotContainDesc: 'Separate with commas',
+    setSuccess: 'Settings saved successfully'
 }
 
 export default en

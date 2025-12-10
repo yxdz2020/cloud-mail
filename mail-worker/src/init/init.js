@@ -25,8 +25,17 @@ const init = {
 		await this.v2_3DB(c);
 		await this.v2_4DB(c);
 		await this.v2_5DB(c);
+		await this.v2_6DB(c);
 		await settingService.refresh(c);
 		return c.text(t('initSuccess'));
+	},
+
+	async v2_6DB(c) {
+		try {
+			await c.env.db.prepare(`ALTER TABLE account ADD COLUMN all_receive INTEGER NOT NULL DEFAULT 0;`).run();
+		} catch (e) {
+			console.error(e)
+		}
 	},
 
 	async v2_5DB(c) {

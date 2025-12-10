@@ -13,7 +13,8 @@
           </div>
           <div class="opt">
             <div class="send-email" @click.stop>
-              <Icon icon="eva:email-fill" width="22" height="22" color="#fccb1a"/>
+              <Icon @click="setAllReceive(item)" v-if="!item.allReceive" icon="eva:email-fill" width="22" height="22" color="#fccb1a"/>
+              <Icon @click="setAllReceive(item)" v-else icon="flat-color-icons:folder" width="22" height="22" color="#23c4f1" />
             </div>
             <div class="settings" @click.stop>
               <Icon icon="fluent-color:clipboard-24" width="22" height="22" @click.stop="copyAccount(item.email)"/>
@@ -127,19 +128,22 @@
 <script setup>
 import {Icon} from "@iconify/vue";
 import {nextTick, reactive, ref, watch} from "vue";
-import {accountList, accountAdd, accountDelete, accountSetName} from "@/request/account.js";
+import {accountList, accountAdd, accountDelete, accountSetName, accountSetAllReceive} from "@/request/account.js";
 import {sleep} from "@/utils/time-utils.js"
 import {isEmail} from "@/utils/verify-utils.js";
 import {useSettingStore} from "@/store/setting.js";
 import {useAccountStore} from "@/store/account.js";
+import {useEmailStore} from "@/store/email.js";
 import {useUserStore} from "@/store/user.js";
 import {hasPerm} from "@/perm/perm.js"
 import {useI18n} from "vue-i18n";
+import {AccountAllReceiveEnum} from "@/enums/account-enum.js";
 
 const {t} = useI18n();
 const userStore = useUserStore();
 const accountStore = useAccountStore();
 const settingStore = useSettingStore();
+const emailStore = useEmailStore();
 const showAdd = ref(false)
 const addLoading = ref(false);
 const domainList = settingStore.domainList
@@ -254,6 +258,28 @@ function openSetName(accountItem) {
   setNameShow.value = true
 }
 
+function setAllReceive(account) {
+  let allReceiveAccount = accounts.find(account => account.allReceive === AccountAllReceiveEnum.ENABLED);
+  if (allReceiveAccount && allReceiveAccount.accountId !== account.accountId) allReceiveAccount.allReceive = AccountAllReceiveEnum.DISABLED;
+  account.allReceive = account.allReceive === AccountAllReceiveEnum.DISABLED ? AccountAllReceiveEnum.ENABLED : AccountAllReceiveEnum.DISABLED;
+  accountSetAllReceive(account.accountId).catch(() => {
+    account.allReceive = account.allReceive === AccountAllReceiveEnum.DISABLED ? AccountAllReceiveEnum.ENABLED : AccountAllReceiveEnum.DISABLED;
+    if (allReceiveAccount) allReceiveAccount.allReceive = AccountAllReceiveEnum.ENABLED;
+  }).then(() => {
+    if (account.allReceive === AccountAllReceiveEnum.ENABLED) {
+      ElMessage({
+        message: t('setSuccess'),
+        type: 'success',
+        plain: true,
+      })
+    }
+    changeAccount(account);
+    emailStore.emailScroll?.refreshList();
+    emailStore.sendScroll?.refreshList();
+  })
+}
+
+
 function showNullSetting(item) {
   return !hasPerm('email:send') && !(item.accountId !== userStore.user.accountId && hasPerm('account:delete'))
 }
@@ -351,7 +377,7 @@ function getAccountList() {
       noLoading.value = true
     }
     if (accounts.length === 0) {
-      accountStore.currentAccount = list[0].accountId
+      accountStore.currentAccount = list[0]
     }
     queryParams.accountId = list.at(-1).accountId
     accounts.push(...list)

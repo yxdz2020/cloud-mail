@@ -496,6 +496,8 @@ function updateCheckStatus() {
 }
 
 function jumpDetails(email) {
+  const sel = window.getSelection();
+  if (sel && !sel.isCollapsed) return;
   emit('jump', email)
 }
 
@@ -907,7 +909,7 @@ function loadData() {
 
 .header-actions {
   display: grid;
-  grid-template-columns: auto 1fr auto auto;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 15px;
   padding: 3px 15px;

@@ -7,7 +7,7 @@
 <h1>Cloud Mail</h1>
 </div>
 <div align="center">
-    <h4>Serverless responsive email service with sending capabilities, deployable on the Cloudflare platform 🎉</h4> 
+    <h4>A minimalist, responsive email service for sending emails, deployable on Cloudflare 🎉</h4> 
 </div>
 
 

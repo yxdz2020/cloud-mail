@@ -16,3 +16,7 @@ export function accountDelete(accountId) {
     return http.delete('/account/delete', {params: {accountId}})
 }
 
+export function accountSetAllReceive(accountId) {
+    return http.put('/account/setAllReceive', {accountId})
+}
+

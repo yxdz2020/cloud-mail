@@ -33,6 +33,7 @@ import {defineOptions, h, onMounted, reactive, ref, watch} from "vue";
 import {sleep} from "@/utils/time-utils.js";
 import router from "@/router/index.js";
 import {Icon} from "@iconify/vue";
+import {AccountAllReceiveEnum} from "@/enums/account-enum.js";
 
 defineOptions({
   name: 'email'
@@ -79,19 +80,23 @@ async function latest() {
     if (!scroll.value.firstLoad && settingStore.settings.autoRefreshTime) {
       try {
         const accountId = accountStore.currentAccountId
+        const allReceive = scroll.value.latestEmail?.allReceive
         const curTimeSort = params.timeSort
         let list = []
 
         //确保发起请求时最后一个邮件是当前账号的,或者
-        if (accountId === scroll.value.latestEmail?.accountId) {
-          list = await emailLatest(latestId, accountId);
+        if (accountId === scroll.value.latestEmail?.reqAccountId) {
+          list = await emailLatest(latestId, accountId, allReceive);
         }
 
-        //确保请求回来后，账号没有切换，时间排序没有改变
-        if (accountId === accountStore.currentAccountId && params.timeSort === curTimeSort) {
+        //确保请求回来后，账号没有切换，时间排序没有改变，全部邮件类型没变
+        if (accountId === accountStore.currentAccountId && params.timeSort === curTimeSort && allReceive === accountStore.currentAccount.allReceive) {
           if (list.length > 0) {
 
             for (let email of list) {
+
+              email.reqAccountId = accountId;
+              email.allReceive = allReceive;
 
               if (!existIds.has(email.emailId)) {
 
@@ -135,7 +140,13 @@ function cancelStar(email) {
 }
 
 function getEmailList(emailId, size) {
-  return emailList(accountStore.currentAccountId, emailId, params.timeSort, size, 0)
+  const accountId =  accountStore.currentAccountId;
+  const allReceive = accountStore.currentAccount.allReceive;
+  return emailList(accountId, allReceive, emailId, params.timeSort, size, 0).then(data => {
+    data.latestEmail.reqAccountId = accountId;
+    data.latestEmail.allReceive = allReceive;
+    return data;
+  })
 }
 
 </script>

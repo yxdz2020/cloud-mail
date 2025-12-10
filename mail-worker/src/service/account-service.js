@@ -6,7 +6,7 @@ import emailService from './email-service';
 import orm from '../entity/orm';
 import account from '../entity/account';
 import { and, asc, eq, gt, inArray, count, sql, ne } from 'drizzle-orm';
-import { isDel, settingConst } from '../const/entity-const';
+import {accountConst, isDel, settingConst} from '../const/entity-const';
 import settingService from './setting-service';
 import turnstileService from './turnstile-service';
 import roleService from './role-service';
@@ -231,8 +231,18 @@ const accountService = {
 		const { accountId } = params
 		await emailService.physicsDeleteByAccountId(c, accountId)
 		await orm(c).delete(account).where(eq(account.accountId, accountId)).run();
-	}
+	},
 
+	async setAllReceive(c, params, userId) {
+		let a = null
+		const { accountId } = params;
+		const accountRow = await this.selectById(c, accountId);
+		if (accountRow.userId !== userId) {
+			return;
+		}
+		await orm(c).update(account).set({ allReceive: accountConst.allReceive.CLOSE }).where(eq(account.userId, userId)).run();
+		await orm(c).update(account).set({ allReceive: accountRow.allReceive ? 0 : 1 }).where(eq(account.accountId, accountId)).run();
+	}
 };
 
 export default accountService;

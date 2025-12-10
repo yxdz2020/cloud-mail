@@ -19,17 +19,19 @@ import kvConst from '../const/kv-const';
 import { t } from '../i18n/i18n'
 import r2Service from './r2-service';
 import domainUtils from '../utils/domain-uitls';
+import account from "../entity/account";
 
 const emailService = {
 
 	async list(c, params, userId) {
 
-		let { emailId, type, accountId, size, timeSort } = params;
+		let { emailId, type, accountId, size, timeSort, allReceive } = params;
 
 		size = Number(size);
 		emailId = Number(emailId);
 		timeSort = Number(timeSort);
 		accountId = Number(accountId);
+		allReceive = Number(allReceive);
 
 		if (size > 30) {
 			size = 30;
@@ -45,6 +47,10 @@ const emailService = {
 
 		}
 
+		if (isNaN(allReceive)) {
+			let accountRow = await accountService.selectById(c, accountId);
+			allReceive = accountRow.allReceive;
+		}
 
 		const query = orm(c)
 			.select({
@@ -58,14 +64,18 @@ const emailService = {
 					eq(star.emailId, email.emailId),
 					eq(star.userId, userId)
 				)
+			).leftJoin(
+				account,
+				eq(account.accountId, email.accountId)
 			)
 			.where(
 				and(
+					allReceive ? eq(1,1) : eq(email.accountId, accountId),
 					eq(email.userId, userId),
-					eq(email.accountId, accountId),
 					timeSort ? gt(email.emailId, emailId) : lt(email.emailId, emailId),
 					eq(email.type, type),
-					eq(email.isDel, isDel.NORMAL)
+					eq(email.isDel, isDel.NORMAL),
+					eq(account.isDel, isDel.NORMAL)
 				)
 			);
 
@@ -77,23 +87,29 @@ const emailService = {
 
 		const listQuery = query.limit(size).all();
 
-		const totalQuery = orm(c).select({ total: count() }).from(email).where(
-			and(
-				eq(email.accountId, accountId),
-				eq(email.userId, userId),
-				eq(email.type, type),
-				eq(email.isDel, isDel.NORMAL)
+		const totalQuery = orm(c).select({ total: count() }).from(email)
+			.leftJoin(
+				account,
+				eq(account.accountId, email.accountId)
 			)
+			.where(
+				and(
+					allReceive ? eq(1,1) : eq(email.accountId, accountId),
+					eq(email.userId, userId),
+					eq(email.type, type),
+					eq(email.isDel, isDel.NORMAL),
+					eq(account.isDel, isDel.NORMAL)
+				)
 		).get();
 
 		const latestEmailQuery = orm(c).select().from(email).where(
 			and(
-				eq(email.accountId, accountId),
+				allReceive ? eq(1,1) : eq(email.accountId, accountId),
 				eq(email.userId, userId),
 				eq(email.type, type),
 				eq(email.isDel, isDel.NORMAL)
 			))
-			.orderBy(desc(email.emailId)).limit(1).get();
+			.orderBy(desc(email.emailId)).limit(size).get();
 
 		let [list, totalRow, latestEmail] = await Promise.all([listQuery, totalQuery, latestEmailQuery]);
 
@@ -445,15 +461,28 @@ const emailService = {
 	},
 
 	async latest(c, params, userId) {
-		let { emailId, accountId } = params;
-		const list = await orm(c).select().from(email).where(
-			and(
-				eq(email.userId, userId),
-				eq(email.isDel, isDel.NORMAL),
-				eq(email.accountId, accountId),
-				eq(email.type, emailConst.type.RECEIVE),
-				gt(email.emailId, emailId)
-			))
+		let { emailId, accountId, allReceive } = params;
+		allReceive = Number(allReceive);
+
+		if (isNaN(allReceive)) {
+			let accountRow = await accountService.selectById(c, accountId);
+			allReceive = accountRow.allReceive;
+		}
+
+		const list = await orm(c).select({...email}).from(email)
+			.leftJoin(
+				account,
+				eq(account.accountId, email.accountId)
+			)
+			.where(
+				and(
+					eq(email.userId, userId),
+					eq(email.isDel, isDel.NORMAL),
+					eq(account.isDel, isDel.NORMAL),
+					allReceive ? eq(1,1) : eq(email.accountId, accountId),
+					eq(email.type, emailConst.type.RECEIVE),
+					gt(email.emailId, emailId)
+				))
 			.orderBy(desc(email.emailId))
 			.limit(20);
 

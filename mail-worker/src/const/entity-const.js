@@ -7,6 +7,13 @@ export const userConst = {
 	}
 }
 
+export const accountConst = {
+	allReceive: {
+		CLOSE: 0,
+		OPEN: 1
+	}
+}
+
 export const roleConst = {
 	isDefault: {
 		CLOSE: 0,

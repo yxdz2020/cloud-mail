@@ -309,6 +309,7 @@ const zh = {
     atLeast: '至少',
     character: '位',
     mustNotContain: '禁止包含',
-    mustNotContainDesc: '输入多个值用,分开'
+    mustNotContainDesc: '输入多个值用,分开',
+    setSuccess: '设置成功'
 }
 export default zh

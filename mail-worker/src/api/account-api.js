@@ -22,3 +22,8 @@ app.put('/account/setName', async (c) => {
 	await accountService.setName(c, await c.req.json(), userContext.getUserId(c));
 	return c.json(result.ok());
 });
+
+app.put('/account/setAllReceive', async (c) => {
+	await accountService.setAllReceive(c, await c.req.json(), userContext.getUserId(c));
+	return c.json(result.ok());
+});
