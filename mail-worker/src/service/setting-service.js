@@ -1,12 +1,12 @@
 import KvConst from '../const/kv-const';
 import setting from '../entity/setting';
 import orm from '../entity/orm';
-import { verifyRecordType } from '../const/entity-const';
+import {verifyRecordType} from '../const/entity-const';
 import fileUtils from '../utils/file-utils';
 import r2Service from './r2-service';
 import constant from '../const/constant';
 import BizError from '../error/biz-error';
-import { t } from '../i18n/i18n'
+import {t} from '../i18n/i18n'
 import verifyRecordService from './verify-record-service';
 
 const settingService = {
@@ -101,6 +101,8 @@ const settingService = {
 		settingRow.regVerifyOpen = regVerifyOpen
 		settingRow.addVerifyOpen = addVerifyOpen
 
+		settingRow.storageType = await r2Service.storageType(c);
+
 		return settingRow;
 	},
 
@@ -131,36 +133,20 @@ const settingService = {
 			return;
 		}
 
-		const hasOss = await r2Service.hasOSS(c);
-
-		if (hasOss) {
-
-			if (background) {
-				await r2Service.delete(c,background)
-				await orm(c).update(setting).set({ background: '' }).run();
-				await this.refresh(c)
-			}
-
+		if (background) {
+			await r2Service.delete(c,background)
+			await orm(c).update(setting).set({ background: '' }).run();
+			await this.refresh(c)
 		}
 	},
 
 	async setBackground(c, params) {
-
-		const settingRow = await this.query(c);
 
 		let { background } = params
 
 		await this.deleteBackground(c);
 
 		if (background && !background.startsWith('http')) {
-
-			if (!await r2Service.hasOSS(c)) {
-				throw new BizError(t('noOsUpBack'));
-			}
-
-			if (!settingRow.r2Domain) {
-				throw new BizError(t('noOsDomainUpBack'));
-			}
 
 			const file = fileUtils.base64ToFile(background)
 
@@ -183,7 +169,7 @@ const settingService = {
 
 	async websiteConfig(c) {
 
-		const settingRow = await this.get(c, true)
+		const settingRow = await this.get(c, true);
 
 		return {
 			register: settingRow.register,

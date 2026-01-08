@@ -197,23 +197,6 @@ const emailService = {
 
 		}
 
-
-		if (imageDataList.length > 0 && !r2Domain) {
-			throw new BizError(t('noOsDomainSendPic'));
-		}
-
-		if (imageDataList.length > 0 && !await r2Service.hasOSS(c)) {
-			throw new BizError(t('noOsSendPic'));
-		}
-
-		if (attachments.length > 0 && !r2Domain) {
-			throw new BizError(t('noOsDomainSendAtt'));
-		}
-
-		if (attachments.length > 0 && !await r2Service.hasOSS(c)) {
-			throw new BizError(t('noOsSendAtt'));
-		}
-
 		if (attachments.length > 0 && manyType === 'divide') {
 			throw new BizError(t('noSeparateSend'));
 		}
@@ -385,7 +368,7 @@ const emailService = {
 					await attService.saveArticleAtt(c, imageDataList, userId, accountId, emailRow.emailId);
 				}
 
-				if (attachments?.length > 0 && await r2Service.hasOSS(c)) {
+				if (attachments?.length > 0) {
 					await attService.saveSendAtt(c, attachments, userId, accountId, emailRow.emailId);
 				}
 

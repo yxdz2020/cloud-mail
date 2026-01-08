@@ -197,7 +197,12 @@
             <div class="card-title">{{ $t('oss') }}</div>
             <div class="card-content">
               <div class="r2domain-item">
-                <div><span>{{ $t('osDomain') }}</span></div>
+                <div>
+                  <span>{{ $t('osDomain') }}</span>
+                  <el-tooltip effect="dark" :content="$t('ossDomainDesc')">
+                    <Icon class="warning" icon="fe:warning" width="18" height="18"/>
+                  </el-tooltip>
+                </div>
                 <div class="r2domain">
                   <span>{{ setting.r2Domain || '' }}</span>
                   <el-button class="opt-button" size="small" type="primary" @click="r2DomainShow = true">
@@ -208,9 +213,6 @@
               <div class="setting-item">
                 <div>
                   <span>{{ $t('s3Configuration') }}</span>
-                  <el-tooltip effect="dark" :content="$t('s3Desc')">
-                    <Icon class="warning" icon="fe:warning" width="18" height="18"/>
-                  </el-tooltip>
                 </div>
                 <div class="r2domain">
                   <el-button class="opt-button" size="small" type="primary" @click="addS3Show = true">
@@ -220,14 +222,12 @@
               </div>
               <div class="setting-item">
                 <div>
-                  <span>{{ $t('kvStorage') }}</span>
-                  <el-tooltip effect="dark" :content="$t('kvStorageDesc')">
-                    <Icon class="warning" icon="fe:warning" width="18" height="18"/>
-                  </el-tooltip>
+                  <span>{{ $t('storageType') }}</span>
                 </div>
                 <div class="r2domain">
-                  <el-switch @change="change" :before-change="beforeChange" :active-value="0" :inactive-value="1"
-                             v-model="setting.kvStorage"/>
+                  <div class="storage-type">
+                    <el-tag>{{ setting.storageType }}</el-tag>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1306,7 +1306,7 @@ function editSetting(settingForm, refreshStatus = true) {
       plain: true
     })
     if (setting.value.manyEmail === 1) {
-      accountStore.currentAccountId = userStore.user.accountId;
+      accountStore.currentAccountId = userStore.user.account.accountId;
     }
     if (refreshStatus) {
       getSettings()
@@ -1702,6 +1702,10 @@ function editSetting(settingForm, refreshStatus = true) {
   display: grid;
   grid-template-columns: 1fr auto;
   align-items: center;
+
+  .storage-type {
+    margin-right: 3px;
+  }
 
   span {
     overflow: hidden;

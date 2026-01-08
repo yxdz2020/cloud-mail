@@ -11,7 +11,6 @@ const zh = {
 	delMyAccount: '不可以删除自己的邮箱',
 	noUserAccount: '该邮箱不属于当前用户',
 	usernameLengthLimit: '用户名长度超出限制',
-	noOsDomainSendPic: '对象存储域名未配置不能发送正文图片',
 	noOsSendPic: '对象存储未配置不能发送正文图片',
 	noOsDomainSendAtt: '对象存储域名未配置不能发送附件',
 	noOsSendAtt: '对象存储未配置不能发送附件',

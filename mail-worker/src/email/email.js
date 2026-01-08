@@ -153,7 +153,7 @@ export async function email(message, env, ctx) {
 		});
 
 		try {
-			if (attachments.length > 0 && await r2Service.hasOSS({ env })) {
+			if (attachments.length > 0) {
 				await attService.addAtt({ env }, attachments);
 			}
 		} catch (e) {
@@ -196,8 +196,8 @@ export async function email(message, env, ctx) {
 		}
 
 	} catch (e) {
-
 		console.error('邮件接收异常: ', e);
+		throw e
 	}
 }
 

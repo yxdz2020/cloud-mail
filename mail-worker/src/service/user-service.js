@@ -25,6 +25,10 @@ const userService = {
 
 		const userRow = await userService.selectById(c, userId);
 
+		if (!userRow) {
+			throw new BizError(t('authExpired'), 401);
+		}
+
 		const [account, roleRow, permKeys] = await Promise.all([
 			accountService.selectByEmailIncludeDel(c, userRow.email),
 			roleService.selectById(c, userRow.type),
